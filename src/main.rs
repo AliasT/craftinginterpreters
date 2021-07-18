@@ -9,5 +9,5 @@ fn main() {
 
     l.scan_tokens(); 
 
-    println!("{:?}", l.tokens);
+    println!("{:#?}", l.tokens);
 }
