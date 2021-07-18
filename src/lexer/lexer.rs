@@ -80,40 +80,27 @@ impl Lexer {
         use self::*;
         match c {
             '(' => self.add_token(LEFT_PAREN, Object::Placeholder),
-
             ')' => self.add_token(RIGHT_PAREN, Object::Placeholder),
-
             '{' => self.add_token(LEFT_BRACE, Object::Placeholder),
-
             '}' => self.add_token(RIGHT_BRACE, Object::Placeholder),
-
             ',' => self.add_token(COMMA, Object::Placeholder),
-
             '.' => self.add_token(DOT, Object::Placeholder),
-
             '-' => self.add_token(MINUS, Object::Placeholder),
-
             '+' => self.add_token(PLUS, Object::Placeholder),
-
             ';' => self.add_token(SEMICOLON, Object::Placeholder),
-
             '*' => self.add_token(STAR, Object::Placeholder),
-
             '!' => {
                 let t = if self.expect('=') { BANG_EQUAL } else { BANG };
                 self.add_token(t, Object::Placeholder)
             }
-
             '=' => {
                 let t = if self.expect('=') { EQUAL_EQUAL } else { EQUAL };
                 self.add_token(t, Object::Placeholder)
             }
-
             '<' => {
                 let t = if self.expect('=') { LESS_EQUAL } else { LESS };
                 self.add_token(t, Object::Placeholder)
             }
-
             '>' => {
                 let t = if self.expect('=') {
                     GREATER_EQUAL
@@ -122,7 +109,6 @@ impl Lexer {
                 };
                 self.add_token(t, Object::Placeholder)
             }
-
             '/' => {
                 if self.expect('/') {
                     // 本行是注释，扫描到行结尾
@@ -133,7 +119,6 @@ impl Lexer {
                     self.add_token(SLASH, Object::Placeholder);
                 }
             }
-
             '"' => {
                 while self.peek() != '"' && !self.is_at_end() {
                     if self.peek() == '\n' {
@@ -151,11 +136,8 @@ impl Lexer {
 
                 self.add_token(STRING, Object::String(value));
             }
-
             '\n' => self.line += 1,
-
             ' ' | '\r' | '\t' => { /* ignore white space */ }
-
             c => {
                 if c.is_numeric() {
                     // 一直到不为数字为止
@@ -172,8 +154,11 @@ impl Lexer {
                         }
                     }
 
-                    let value = self.get_by_range(self.start, self.current);
-                    let value = value.parse::<f32>().expect("解析数字出差错");
+                    let value = self
+                        .get_by_range(self.start, self.current)
+                        .parse::<f32>()
+                        .expect("解析数字出错");
+
                     self.add_token(NUMBER, Object::Digit(value));
                 } else if c.is_ascii_alphanumeric() {
                     // 忽略下划线的关键字
