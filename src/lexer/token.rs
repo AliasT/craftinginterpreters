@@ -1,7 +1,6 @@
 use phf::phf_map;
-#[allow(non_camel_case_types)]
-use std::{collections::HashMap, fmt::Display};
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Copy)]
 pub enum TokenType {
     // Single-character tokens.
@@ -64,6 +63,7 @@ pub enum Object {
 
 use TokenType::*;
 
+#[allow(non_upper_case_globals)]
 pub static Keywords: phf::Map<&'static str, TokenType> = phf_map! {
     "and"    => AND,
     "class"  => CLASS,
@@ -99,11 +99,5 @@ impl Token {
             literal,
             line,
         }
-    }
-}
-
-impl Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?} {:?} {:?}", self.tag, self.lexeme, self.literal)
     }
 }

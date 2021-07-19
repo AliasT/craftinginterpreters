@@ -1,5 +1,3 @@
-use std::{collections::btree_map::Range, slice::SliceIndex};
-
 use crate::lexer::token::Keywords;
 
 use super::token::{Object, Token, TokenType};
