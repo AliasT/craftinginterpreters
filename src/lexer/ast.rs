@@ -1,5 +1,7 @@
 use super::token::{Object, Token, TokenType};
 
+#[allow(dead_code)]
+#[derive(Debug)]
 /// Expr
 pub enum Expression {
     Literal(Object),
@@ -15,6 +17,7 @@ pub enum Expression {
     If(Box<Expression>, Box<Expression>, Box<Expression>),
     /// Block
     Block(Vec<Box<Expression>>),
+    Mark,
 }
 
 impl Expression {
@@ -40,6 +43,7 @@ impl Expression {
                 Expression::Print(_) => todo!(),
                 Expression::If(_, _, _) => todo!(),
                 Expression::Block(_) => todo!(),
+                Expression::Mark => todo!(),
             }
     }
 }

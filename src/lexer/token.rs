@@ -1,7 +1,8 @@
 use phf::phf_map;
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Clone, Copy)]
+#[allow(unused)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenType {
     // Single-character tokens.
     LEFT_PAREN,
@@ -52,10 +53,11 @@ pub enum TokenType {
     EOF,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Object {
     String(String),
     Digit(f32),
+    Bool(bool),
 
     // 占位符
     Placeholder,
@@ -83,12 +85,12 @@ pub static Keywords: phf::Map<&'static str, TokenType> = phf_map! {
     "while"  => WHILE,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Token {
-    tag: TokenType,
-    lexeme: String,
-    literal: Object,
-    line: usize,
+    pub tag: TokenType,
+    pub lexeme: String,
+    pub literal: Object,
+    pub line: usize,
 }
 
 impl Token {

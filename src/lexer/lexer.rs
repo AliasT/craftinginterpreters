@@ -12,6 +12,7 @@ pub struct Lexer {
     line: usize,
 }
 
+#[allow(dead_code)]
 impl Lexer {
     pub fn new(input: String) -> Self {
         Lexer {
