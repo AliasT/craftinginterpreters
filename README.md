@@ -19,6 +19,11 @@ porting http://www.craftinginterpreters.com/scanning.html
 
 ## BNF
 
+## parser
+
+递归下降解析器
+A recursive descent parser is a literal translation of the grammar’s rules straight into imperative code. Each rule becomes a function.
+
 ## 模式
 
 1. 解释器模式

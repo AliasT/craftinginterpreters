@@ -11,12 +11,6 @@ pub enum Expression {
     Grouping(Box<Expression>),
     /// A and B, A or B
     Logical(Box<Expression>, Token, Box<Expression>),
-    Var(Token),
-    Print(Box<Expression>),
-    /// condition, then, else
-    If(Box<Expression>, Box<Expression>, Box<Expression>),
-    /// Block
-    Block(Vec<Box<Expression>>),
     Mark,
 }
 
@@ -39,10 +33,6 @@ impl Expression {
                 Expression::Binary(_, _, _) => todo!(),
                 Expression::Grouping(_) => todo!(),
                 Expression::Logical(_, _, _) => todo!(),
-                Expression::Var(_) => todo!(),
-                Expression::Print(_) => todo!(),
-                Expression::If(_, _, _) => todo!(),
-                Expression::Block(_) => todo!(),
                 Expression::Mark => todo!(),
             }
     }

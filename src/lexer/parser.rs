@@ -58,16 +58,6 @@ impl Parser {
         expr
     }
 
-    fn unary(&mut self) -> Expression {
-        if self.expect(vec![BANG, MINUS]) {
-            let op = self.previous();
-            let right = self.unary();
-            return Expression::Unary(op, Box::new(right));
-        }
-
-        self.primary()
-    }
-
     fn factor(&mut self) -> Expression {
         let mut expr = self.unary();
 
@@ -78,6 +68,16 @@ impl Parser {
         }
 
         expr
+    }
+
+    fn unary(&mut self) -> Expression {
+        if self.expect(vec![BANG, MINUS]) {
+            let op = self.previous();
+            let right = self.unary();
+            return Expression::Unary(op, Box::new(right));
+        }
+
+        self.primary()
     }
 
     fn primary(&mut self) -> Expression {
@@ -110,6 +110,7 @@ impl Parser {
         panic!("{}", message)
     }
 
+    /// 如果找到了一个符合条件的token，同时指针后移
     fn expect(&mut self, tokens: Vec<TokenType>) -> bool {
         if tokens.iter().any(|t| self.check(*t)) {
             self.advance();
@@ -142,14 +143,14 @@ impl Parser {
     }
 
     fn is_at_end(&self) -> bool {
-        self.peek().tag == EOF
+        self.current == self.tokens.len()
     }
 }
 
 #[test]
 fn test() {
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("-3!=4 ="));
+    let mut l = Lexer::new(String::from("6/3-1"));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);
