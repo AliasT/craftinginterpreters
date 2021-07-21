@@ -22,7 +22,14 @@ porting http://www.craftinginterpreters.com/scanning.html
 ## parser
 
 递归下降解析器
-A recursive descent parser is a literal translation of the grammar’s rules straight into imperative code. Each rule becomes a function.
+
+- Recursive descent is considered a top-down parser because it starts from the top or outermost grammar rule (here expression) and works its way down into the nested subexpressions before finally reaching the leaves of the syntax tree.
+
+- A recursive descent parser is a literal translation of the grammar’s rules straight into imperative code.
+
+- Each rule becomes a function.
+
+- Each rule here only matches expressions at its precedence level or higher.
 
 ## 模式
 

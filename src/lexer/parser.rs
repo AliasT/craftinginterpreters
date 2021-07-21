@@ -17,13 +17,22 @@ impl Parser {
         self.expression()
     }
 
+    // expression     → equality ;
+    // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+    // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    // term           → factor ( ( "-" | "+" ) factor )* ;
+    // factor         → unary ( ( "/" | "*" ) unary )* ;
+    // unary          → ( "!" | "-" ) unary
+    //                | primary ;
+    // primary        → NUMBER | STRING | "true" | "false" | "nil"
+    //                | "(" expression ")" ;
     fn expression(&mut self) -> Expression {
         self.equality()
     }
 
     fn equality(&mut self) -> Expression {
+        println!("final step");
         let mut expr = self.comparison();
-        println!("{:#?}", expr);
 
         while self.expect(vec![BANG_EQUAL, EQUAL_EQUAL]) {
             let op = self.previous();
@@ -35,6 +44,8 @@ impl Parser {
     }
 
     fn comparison(&mut self) -> Expression {
+        println!("fifth step");
+
         let mut expr = self.term();
 
         while self.expect(vec![GREATER, GREATER_EQUAL, LESS, LESS_EQUAL]) {
@@ -47,6 +58,7 @@ impl Parser {
     }
 
     fn term(&mut self) -> Expression {
+        println!("fourth step");
         let mut expr = self.factor();
 
         while self.expect(vec![MINUS, PLUS]) {
@@ -59,6 +71,7 @@ impl Parser {
     }
 
     fn factor(&mut self) -> Expression {
+        println!("third setp");
         let mut expr = self.unary();
 
         while self.expect(vec![SLASH, STAR]) {
@@ -71,6 +84,7 @@ impl Parser {
     }
 
     fn unary(&mut self) -> Expression {
+        println!("second step");
         if self.expect(vec![BANG, MINUS]) {
             let op = self.previous();
             let right = self.unary();
@@ -81,6 +95,7 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Expression {
+        println!("first reach ");
         if self.expect(vec![FALSE]) {
             return Expression::Literal(Object::Bool(false));
         }
@@ -146,7 +161,7 @@ impl Parser {
     }
 
     fn is_at_end(&self) -> bool {
-        self.current == self.tokens.len() - 1
+        self.current == self.tokens.len()
     }
 }
 
