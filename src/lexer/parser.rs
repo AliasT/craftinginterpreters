@@ -9,11 +9,11 @@ pub struct Parser {
 
 #[allow(dead_code)]
 impl Parser {
-    fn new(tokens: Vec<Token>) -> Self {
+    pub fn new(tokens: Vec<Token>) -> Self {
         Parser { tokens, current: 0 }
     }
 
-    fn parse(&mut self) -> Expression {
+    pub fn parse(&mut self) -> Expression {
         self.expression()
     }
 
@@ -168,7 +168,7 @@ impl Parser {
 #[test]
 fn test() {
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("1+6/3"));
+    let mut l = Lexer::new(String::from("1+6/(3+3)*2"));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);
