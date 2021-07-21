@@ -80,5 +80,6 @@ fn test() {
     let expr = parser.parse();
 
     let result = Compiler::new().compile_expr(expr);
-    println!("{:?}", result);
+
+    assert_eq!(result, Object::Digit(3.0));
 }
