@@ -120,6 +120,7 @@ impl Parser {
         false
     }
 
+    /// 给定一个 token 类型，判断当前 token 是否符合
     fn check(&self, tag: TokenType) -> bool {
         if self.is_at_end() {
             return false;
@@ -127,6 +128,7 @@ impl Parser {
         self.peek().tag == tag
     }
 
+    /// current 指针向前移动，但是返回当前 token
     fn advance(&mut self) -> Token {
         if !self.is_at_end() {
             self.current += 1;
@@ -138,19 +140,20 @@ impl Parser {
         self.tokens.get(self.current).unwrap().clone()
     }
 
+    /// 返回上一个token，current 指针不变
     fn previous(&self) -> Token {
         self.tokens.get(self.current - 1).unwrap().clone()
     }
 
     fn is_at_end(&self) -> bool {
-        self.current == self.tokens.len()
+        self.current == self.tokens.len() - 1
     }
 }
 
 #[test]
 fn test() {
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("6/3-1"));
+    let mut l = Lexer::new(String::from("1+6/3"));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);
