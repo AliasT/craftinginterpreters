@@ -1,7 +1,7 @@
 use super::token::{Object, Token, TokenType};
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Expr
 pub enum Expression {
     Literal(Object),
@@ -37,6 +37,14 @@ impl Expression {
             }
     }
 }
+
+#[derive(Debug, Clone)]
+pub enum Statement {
+    Print(Expression),
+    Expression(Expression),
+}
+
+impl Statement {}
 
 #[test]
 fn expression_display() {

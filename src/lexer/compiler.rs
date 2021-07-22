@@ -1,9 +1,6 @@
-use std::{
-    any::{Any, TypeId},
-    convert::TryInto,
-};
+use std::os::macos::raw::stat;
 
-use super::ast::Expression;
+use super::ast::{Expression, Statement};
 use crate::lexer::{lexer::Lexer, parser::Parser, token::Object, token::TokenType};
 use TokenType::*;
 
@@ -14,6 +11,12 @@ pub struct Compiler {
 impl Compiler {
     fn new() -> Self {
         Compiler {}
+    }
+
+    fn interpret(&self, statements: Vec<Statement>) {
+        for stmt in statements {
+            self.compile_stmt(stmt);
+        }
     }
 
     fn compile_expr(&self, expr: Expression) -> Object {
@@ -69,17 +72,30 @@ impl Compiler {
             Expression::Mark => todo!(),
         }
     }
+
+    fn compile_stmt(&self, stmt: Statement) {
+        match stmt {
+            Statement::Expression(expr) => {
+                self.compile_expr(expr);
+            }
+            Statement::Print(expr) => {
+                let value = self.compile_expr(expr);
+                // FIXME: unwrap Object
+                println!("{}", value)
+            }
+        };
+    }
 }
+
 #[test]
 fn test() {
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("1+6/(3+3)*2"));
+    let mut l = Lexer::new(String::from("print 1+6/(3+3)*2"));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);
-    let expr = parser.parse();
+    let statements = parser.parse();
 
-    let result = Compiler::new().compile_expr(expr);
-
-    assert_eq!(result, Object::Digit(3.0));
+    let _ = Compiler::new().interpret(statements);
+    // assert_eq!(result, Object::Digit(3.0));
 }

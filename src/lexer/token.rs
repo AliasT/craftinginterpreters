@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Display};
+
 use phf::phf_map;
 
 #[allow(non_camel_case_types)]
@@ -61,6 +63,19 @@ pub enum Object {
 
     // 占位符
     Placeholder,
+}
+
+impl Display for Object {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let _ = match self {
+            Object::String(v) => write!(f, "{}", v),
+            Object::Digit(v) => write!(f, "{}", v),
+            Object::Bool(v) => write!(f, "{}", v),
+            Object::Placeholder => write!(f, ""),
+        };
+
+        Ok(())
+    }
 }
 
 use TokenType::*;

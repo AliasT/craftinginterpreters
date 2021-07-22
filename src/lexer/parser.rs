@@ -1,4 +1,10 @@
-use super::{ast::Expression, token::Token, token::TokenType};
+use std::os::macos::raw::stat;
+
+use super::{
+    ast::{Expression, Statement},
+    token::Token,
+    token::TokenType,
+};
 use crate::lexer::{lexer::Lexer, token::Object};
 use TokenType::*;
 
@@ -13,8 +19,30 @@ impl Parser {
         Parser { tokens, current: 0 }
     }
 
-    pub fn parse(&mut self) -> Expression {
-        self.expression()
+    pub fn parse(&mut self) -> Vec<Statement> {
+        let mut statements: Vec<Statement> = vec![];
+        while !self.is_at_end() {
+            statements.push(self.statement())
+        }
+        statements
+    }
+
+    fn statement(&mut self) -> Statement {
+        if self.expect(vec![PRINT]) {
+            return self.print();
+        }
+
+        self.expression_statement()
+    }
+
+    fn print(&mut self) -> Statement {
+        let value = self.expression();
+
+        Statement::Print(value)
+    }
+
+    fn expression_statement(&mut self) -> Statement {
+        Statement::Expression(self.expression())
     }
 
     // expression     → equality ;
@@ -136,7 +164,7 @@ impl Parser {
     }
 
     /// 给定一个 token 类型，判断当前 token 是否符合
-    fn check(&self, tag: TokenType) -> bool {
+    fn check(&mut self, tag: TokenType) -> bool {
         if self.is_at_end() {
             return false;
         }
@@ -160,7 +188,7 @@ impl Parser {
         self.tokens.get(self.current - 1).unwrap().clone()
     }
 
-    fn is_at_end(&self) -> bool {
+    fn is_at_end(&mut self) -> bool {
         self.current == self.tokens.len()
     }
 }
