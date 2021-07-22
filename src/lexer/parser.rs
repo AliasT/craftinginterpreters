@@ -41,6 +41,20 @@ impl Parser {
         return self.statement();
     }
 
+    fn assignment(&mut self) -> Expression {
+        let expr = self.equality();
+        if self.expect(vec![EQUAL]) {
+            // let eq = self.previous();
+            let value = self.assignment();
+            if let Expression::Var(token) = expr {
+                return Expression::Assignment(token, Box::new(value));
+            }
+            panic!("invalid assignment")
+        }
+
+        return expr;
+    }
+
     fn print(&mut self) -> Statement {
         let value = self.expression();
 
@@ -70,7 +84,7 @@ impl Parser {
     // primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                | "(" expression ")" ;
     fn expression(&mut self) -> Expression {
-        self.equality()
+        self.assignment()
     }
 
     fn equality(&mut self) -> Expression {

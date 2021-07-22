@@ -65,6 +65,62 @@ pub enum Object {
     Placeholder,
 }
 
+#[derive(Debug, Clone)]
+pub enum UnionObject<'a> {
+    /// 值类型
+    Value(Object),
+    /// 引用类型
+    Reference(&'a Object),
+}
+
+impl From<String> for Object {
+    fn from(v: String) -> Self {
+        Object::String(v)
+    }
+}
+
+impl From<f32> for Object {
+    fn from(v: f32) -> Self {
+        Object::Digit(v)
+    }
+}
+
+impl From<bool> for Object {
+    fn from(v: bool) -> Self {
+        Object::Bool(v)
+    }
+}
+
+impl Into<f32> for Object {
+    fn into(self) -> f32 {
+        match self {
+            Object::Digit(v) => v,
+            _ => todo!(),
+        }
+    }
+}
+
+impl<'a> From<Object> for UnionObject<'a> {
+    fn from(v: Object) -> Self {
+        UnionObject::Value(v)
+    }
+}
+
+impl<'a> From<&'a Object> for UnionObject<'a> {
+    fn from(v: &'a Object) -> Self {
+        UnionObject::Reference(v)
+    }
+}
+
+impl<'a> Into<Object> for UnionObject<'a> {
+    fn into(self) -> Object {
+        match self {
+            UnionObject::Value(v) => v,
+            UnionObject::Reference(v) => todo!(),
+        }
+    }
+}
+
 impl Display for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let _ = match self {
