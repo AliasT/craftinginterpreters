@@ -1,5 +1,3 @@
-use std::os::macos::raw::stat;
-
 use super::{
     ast::{Expression, Statement},
     vm::VM,
@@ -75,7 +73,7 @@ impl Compiler {
             Expression::Grouping(ex) => self.compile_expr(*ex),
             Expression::Logical(_, _, _) => todo!(),
             Expression::Mark => todo!(),
-            Expression::Var(_) => todo!(),
+            Expression::Var(token) => self.vm.retrieve(token.lexeme).clone(),
         }
     }
 
@@ -92,7 +90,6 @@ impl Compiler {
                 let value = self.compile_expr(initializer);
                 // FIXME: unwrap Object
                 self.vm.define(name.lexeme, value);
-                println!("{:?}", self.vm);
             }
         };
     }
@@ -101,7 +98,7 @@ impl Compiler {
 #[test]
 fn test() {
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("var a = 3"));
+    let mut l = Lexer::new(String::from("var a = 3\nprint a"));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);
