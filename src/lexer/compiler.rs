@@ -1,19 +1,24 @@
 use std::os::macos::raw::stat;
 
-use super::ast::{Expression, Statement};
+use super::{
+    ast::{Expression, Statement},
+    vm::VM,
+};
 use crate::lexer::{lexer::Lexer, parser::Parser, token::Object, token::TokenType};
 use TokenType::*;
 
+#[derive(Debug)]
 pub struct Compiler {
     // pub expr: Expression,
+    vm: VM,
 }
 
 impl Compiler {
     fn new() -> Self {
-        Compiler {}
+        Compiler { vm: VM::new() }
     }
 
-    fn interpret(&self, statements: Vec<Statement>) {
+    fn interpret(&mut self, statements: Vec<Statement>) {
         for stmt in statements {
             self.compile_stmt(stmt);
         }
@@ -70,18 +75,24 @@ impl Compiler {
             Expression::Grouping(ex) => self.compile_expr(*ex),
             Expression::Logical(_, _, _) => todo!(),
             Expression::Mark => todo!(),
+            Expression::Var(_) => todo!(),
         }
     }
 
-    fn compile_stmt(&self, stmt: Statement) {
+    fn compile_stmt(&mut self, stmt: Statement) {
         match stmt {
             Statement::Expression(expr) => {
                 self.compile_expr(expr);
             }
             Statement::Print(expr) => {
                 let value = self.compile_expr(expr);
-                // FIXME: unwrap Object
                 println!("{}", value)
+            }
+            Statement::Var(name, initializer) => {
+                let value = self.compile_expr(initializer);
+                // FIXME: unwrap Object
+                self.vm.define(name.lexeme, value);
+                println!("{:?}", self.vm);
             }
         };
     }
@@ -90,7 +101,7 @@ impl Compiler {
 #[test]
 fn test() {
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("print 1+6/(3+3)*2"));
+    let mut l = Lexer::new(String::from("var a = 3"));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);

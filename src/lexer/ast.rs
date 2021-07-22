@@ -11,6 +11,7 @@ pub enum Expression {
     Grouping(Box<Expression>),
     /// A and B, A or B
     Logical(Box<Expression>, Token, Box<Expression>),
+    Var(Token),
     Mark,
 }
 
@@ -34,6 +35,7 @@ impl Expression {
                 Expression::Grouping(_) => todo!(),
                 Expression::Logical(_, _, _) => todo!(),
                 Expression::Mark => todo!(),
+                Expression::Var(_) => todo!(),
             }
     }
 }
@@ -42,6 +44,7 @@ impl Expression {
 pub enum Statement {
     Print(Expression),
     Expression(Expression),
+    Var(Token, Expression),
 }
 
 impl Statement {}

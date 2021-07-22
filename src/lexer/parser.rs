@@ -1,5 +1,3 @@
-use std::os::macos::raw::stat;
-
 use super::{
     ast::{Expression, Statement},
     token::Token,
@@ -22,7 +20,7 @@ impl Parser {
     pub fn parse(&mut self) -> Vec<Statement> {
         let mut statements: Vec<Statement> = vec![];
         while !self.is_at_end() {
-            statements.push(self.statement())
+            statements.push(self.declaration())
         }
         statements
     }
@@ -35,10 +33,27 @@ impl Parser {
         self.expression_statement()
     }
 
+    fn declaration(&mut self) -> Statement {
+        if self.expect(vec![VAR]) {
+            return self.var();
+        }
+
+        return self.statement();
+    }
+
     fn print(&mut self) -> Statement {
         let value = self.expression();
 
         Statement::Print(value)
+    }
+
+    fn var(&mut self) -> Statement {
+        let name = self.consume(IDENTIFIER, "expect var name".to_string());
+        if self.expect(vec![EQUAL]) {
+            return Statement::Var(name, self.expression());
+        }
+
+        panic!("var error")
     }
 
     fn expression_statement(&mut self) -> Statement {
@@ -140,6 +155,10 @@ impl Parser {
             let expr = self.expression();
             self.consume(RIGHT_PAREN, "expect ')' after expression".to_string());
             return Expression::Grouping(Box::new(expr));
+        }
+
+        if self.expect(vec![IDENTIFIER]) {
+            return Expression::Var(self.previous());
         }
 
         Expression::Mark
