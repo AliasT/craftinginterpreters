@@ -1,10 +1,10 @@
 use super::{
     ast::{Expression, Statement},
-    token::Token,
-    token::TokenType,
+    token::{
+        Object, Token,
+        TokenType::{self, *},
+    },
 };
-use crate::lexer::{lexer::Lexer, token::Object};
-use TokenType::*;
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -228,6 +228,8 @@ impl Parser {
 
 #[test]
 fn test() {
+    use crate::lexer::lexer::Lexer;
+
     // FIXME: Option Unwrap Error
     let mut l = Lexer::new(String::from("1+6/(3+3)*2"));
     l.scan_tokens();

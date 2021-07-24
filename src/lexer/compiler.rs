@@ -1,10 +1,8 @@
 use super::{
     ast::{Expression, Statement},
-    token::UnionObject,
+    token::{Object, TokenType::*, UnionObject},
     vm::VM,
 };
-use crate::lexer::{lexer::Lexer, parser::Parser, token::Object, token::TokenType};
-use TokenType::*;
 
 #[derive(Debug)]
 pub struct Compiler<'a> {
@@ -12,6 +10,7 @@ pub struct Compiler<'a> {
     vm: VM<'a>,
 }
 
+#[allow(dead_code)]
 impl<'a> Compiler<'a> {
     fn new() -> Self {
         Compiler { vm: VM::new() }
@@ -104,6 +103,7 @@ impl<'a> Compiler<'a> {
 
 #[test]
 fn test() {
+    use super::{lexer::Lexer, parser::Parser};
     // FIXME: Option Unwrap Error
     let mut l = Lexer::new(String::from("var a = 3\nvar b = a\nprint b"));
     l.scan_tokens();
