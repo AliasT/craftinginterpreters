@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Display};
+
 use super::{
     ast::{Expression, Statement},
     token::{
@@ -30,7 +32,20 @@ impl Parser {
             return self.print();
         }
 
+        if self.expect(vec![LEFT_BRACE]) {
+            return Statement::Block(self.block());
+        }
+
         self.expression_statement()
+    }
+
+    fn block(&mut self) -> Vec<Statement> {
+        let mut statements = vec![];
+        while !self.check(RIGHT_BRACE) && !self.is_at_end() {
+            statements.push(self.declaration())
+        }
+        self.consume(RIGHT_BRACE, "expected '}' after block.");
+        statements
     }
 
     fn declaration(&mut self) -> Statement {
@@ -62,7 +77,7 @@ impl Parser {
     }
 
     fn var(&mut self) -> Statement {
-        let name = self.consume(IDENTIFIER, "expect var name".to_string());
+        let name = self.consume(IDENTIFIER, "expect var name");
         if self.expect(vec![EQUAL]) {
             return Statement::Var(name, self.expression());
         }
@@ -167,7 +182,7 @@ impl Parser {
 
         if self.expect(vec![LEFT_PAREN]) {
             let expr = self.expression();
-            self.consume(RIGHT_PAREN, "expect ')' after expression".to_string());
+            self.consume(RIGHT_PAREN, "expect ')' after expression");
             return Expression::Grouping(Box::new(expr));
         }
 
@@ -178,7 +193,7 @@ impl Parser {
         Expression::Mark
     }
 
-    fn consume(&mut self, tag: TokenType, message: String) -> Token {
+    fn consume<T: AsRef<str> + Display>(&mut self, tag: TokenType, message: T) -> Token {
         if self.check(tag) {
             return self.advance();
         }

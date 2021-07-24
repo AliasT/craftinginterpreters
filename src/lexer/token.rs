@@ -1,4 +1,7 @@
-use std::fmt::{Debug, Display};
+use std::{
+    fmt::{Debug, Display},
+    rc::Rc,
+};
 
 use phf::phf_map;
 
@@ -100,22 +103,22 @@ impl Into<f32> for Object {
     }
 }
 
-impl<'a> From<Object> for UnionObject<'a> {
+impl<'a> From<Object> for Rc<UnionObject<'a>> {
     fn from(v: Object) -> Self {
-        UnionObject::Value(v)
+        Rc::new(UnionObject::Value(v))
     }
 }
 
-impl<'a> From<&'a Object> for UnionObject<'a> {
+impl<'a> From<&'a Object> for Rc<UnionObject<'a>> {
     fn from(v: &'a Object) -> Self {
-        UnionObject::Reference(v)
+        Rc::new(UnionObject::Reference(v))
     }
 }
 
-impl<'a> Into<Object> for UnionObject<'a> {
+impl<'a> Into<Object> for Rc<UnionObject<'a>> {
     fn into(self) -> Object {
-        match self {
-            UnionObject::Value(v) => v,
+        match self.as_ref() {
+            UnionObject::Value(v) => v.to_owned(),
             UnionObject::Reference(v) => todo!(),
         }
     }
@@ -165,10 +168,15 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn new(tag: TokenType, lexeme: String, literal: Object, line: usize) -> Self {
+    pub fn new<T: Display + AsRef<str>>(
+        tag: TokenType,
+        lexeme: T,
+        literal: Object,
+        line: usize,
+    ) -> Self {
         Token {
             tag,
-            lexeme,
+            lexeme: lexeme.to_string(),
             literal,
             line,
         }

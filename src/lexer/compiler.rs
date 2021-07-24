@@ -1,41 +1,47 @@
+use std::{cell::RefCell, rc::Rc};
+
 use super::{
     ast::{Expression, Statement},
+    environment::Enviroment,
     token::{Object, TokenType::*, UnionObject},
-    vm::VM,
 };
 
 #[derive(Debug)]
 pub struct Compiler<'a> {
     // pub expr: Expression,
-    vm: VM<'a>,
+    enviroment: Rc<RefCell<Enviroment<'a>>>,
 }
 
 #[allow(dead_code)]
 impl<'a> Compiler<'a> {
     fn new() -> Self {
-        Compiler { vm: VM::new() }
+        Compiler {
+            enviroment: Rc::new(RefCell::new(Enviroment::new(
+                Option::<Rc<RefCell<Enviroment>>>::None,
+            ))),
+        }
     }
 
-    fn interpret(&mut self, statements: Vec<Statement>) {
+    fn interpret(&'a mut self, statements: Vec<Statement>) {
         for stmt in statements {
             self.compile_stmt(stmt);
         }
     }
 
-    fn compile_expr(&mut self, expr: Expression) -> UnionObject<'a> {
+    fn compile_expr(&mut self, expr: Expression) -> Rc<UnionObject<'a>> {
         match expr {
             Expression::Literal(v) => match v {
                 v => v.into(),
             },
             Expression::Unary(token, ex) => {
                 let ret = self.compile_expr(*ex);
-                if let UnionObject::Value(Object::Digit(n)) = ret {
+                if let UnionObject::Value(Object::Digit(n)) = ret.as_ref() {
                     if token.tag == MINUS {
                         return Object::from(-n).into();
                     }
                 }
 
-                if let UnionObject::Value(Object::Bool(n)) = ret {
+                if let UnionObject::Value(Object::Bool(n)) = ret.as_ref() {
                     if token.tag == BANG {
                         return Object::from(!n).into();
                     }
@@ -45,9 +51,10 @@ impl<'a> Compiler<'a> {
             }
             Expression::Assignment(ident, exp) => {
                 let value = self.compile_expr(*exp);
-                let t = value.clone();
-                self.vm.assign(ident.lexeme, value);
-                t
+                self.enviroment
+                    .borrow_mut()
+                    .assign(ident.lexeme, value.clone());
+                value
             }
             Expression::Binary(le, op, re) => {
                 let left = self.compile_expr(*le).into();
@@ -55,6 +62,7 @@ impl<'a> Compiler<'a> {
 
                 if let (Object::Digit(lv), Object::Digit(rv)) = (left, right) {
                     return match op.tag {
+                        // TODO: 使用 Operator overload
                         PLUS => Object::Digit(lv + rv),
                         MINUS => Object::Digit(lv - rv),
                         SLASH => Object::Digit(lv / rv),
@@ -63,7 +71,6 @@ impl<'a> Compiler<'a> {
                         GREATER_EQUAL => Object::Bool(lv >= rv),
                         LESS => Object::Bool(lv < rv),
                         LESS_EQUAL => Object::Bool(lv <= rv),
-
                         // TODO：string 的比较
                         BANG_EQUAL => Object::Bool(lv != rv),
                         EQUAL => Object::Bool(lv == rv),
@@ -79,7 +86,7 @@ impl<'a> Compiler<'a> {
             Expression::Grouping(ex) => self.compile_expr(*ex),
             Expression::Logical(_, _, _) => todo!(),
             Expression::Mark => todo!(),
-            Expression::Var(token) => self.vm.retrieve(token.lexeme).clone(),
+            Expression::Var(token) => self.enviroment.borrow_mut().retrieve(token.lexeme).clone(),
         }
     }
 
@@ -90,12 +97,21 @@ impl<'a> Compiler<'a> {
             }
             Statement::Print(expr) => {
                 let value = self.compile_expr(expr);
-                println!("{}", <UnionObject<'a> as Into<Object>>::into(value))
+                println!("{}", <Rc<UnionObject<'a>> as Into<Object>>::into(value))
             }
             Statement::Var(name, initializer) => {
                 let value = self.compile_expr(initializer);
-                // FIXME: unwrap Object
-                self.vm.define(name.lexeme, value);
+                self.enviroment.borrow_mut().define(name.lexeme, value);
+            }
+            Statement::Block(statements) => {
+                let previous = self.enviroment.clone();
+                let inner = Enviroment::new(self.enviroment.clone());
+                self.enviroment = Rc::new(RefCell::new(inner));
+                for stmt in statements {
+                    self.compile_stmt(stmt);
+                }
+
+                self.enviroment = previous;
             }
         };
     }
@@ -105,7 +121,7 @@ impl<'a> Compiler<'a> {
 fn test() {
     use super::{lexer::Lexer, parser::Parser};
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("var a = 3\nvar b = a\nprint b"));
+    let mut l = Lexer::new(String::from("var a = 3\nvar b = a\n{b = 10}\nprint b"));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);

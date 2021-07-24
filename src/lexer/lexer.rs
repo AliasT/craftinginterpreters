@@ -65,7 +65,7 @@ impl Lexer {
     }
 
     fn add_token(&mut self, tag: TokenType, literal: Object) {
-        let text = self
+        let text: String = self
             .source
             .get(self.start..self.current)
             .unwrap()

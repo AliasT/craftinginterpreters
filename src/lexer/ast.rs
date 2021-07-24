@@ -45,6 +45,7 @@ pub enum Statement {
     Print(Expression),
     Expression(Expression),
     Var(Token, Expression),
+    Block(Vec<Statement>),
 }
 
 impl Statement {}
@@ -54,7 +55,7 @@ fn expression_display() {
     let e = Expression::Assignment(
         Token::new(
             TokenType::IDENTIFIER,
-            "name".to_string(),
+            "name",
             Object::String("name".to_string()),
             1,
         ),
