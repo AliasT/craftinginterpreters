@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display};
+use std::fmt::Display;
 
 use super::{
     ast::{Expression, Statement},
@@ -28,6 +28,10 @@ impl Parser {
     }
 
     fn statement(&mut self) -> Statement {
+        if self.expect(vec![IF]) {
+            return self.ifstmt();
+        }
+
         if self.expect(vec![PRINT]) {
             return self.print();
         }
@@ -76,6 +80,24 @@ impl Parser {
         Statement::Print(value)
     }
 
+    fn ifstmt(&mut self) -> Statement {
+        self.consume(LEFT_PAREN, "expect '(' after 'if' ");
+        let condition = self.expression();
+        self.consume(RIGHT_PAREN, "expect ')' after if condition");
+        let then_block = self.statement();
+        let else_block = if self.expect(vec![ELSE]) {
+            Some(self.statement())
+        } else {
+            None
+        };
+
+        Statement::If(
+            condition,
+            Box::new(then_block),
+            else_block.map(|s| Box::new(s)),
+        )
+    }
+
     fn var(&mut self) -> Statement {
         let name = self.consume(IDENTIFIER, "expect var name");
         if self.expect(vec![EQUAL]) {
@@ -103,7 +125,6 @@ impl Parser {
     }
 
     fn equality(&mut self) -> Expression {
-        println!("final step");
         let mut expr = self.comparison();
 
         while self.expect(vec![BANG_EQUAL, EQUAL_EQUAL]) {
@@ -116,8 +137,6 @@ impl Parser {
     }
 
     fn comparison(&mut self) -> Expression {
-        println!("fifth step");
-
         let mut expr = self.term();
 
         while self.expect(vec![GREATER, GREATER_EQUAL, LESS, LESS_EQUAL]) {
@@ -130,7 +149,6 @@ impl Parser {
     }
 
     fn term(&mut self) -> Expression {
-        println!("fourth step");
         let mut expr = self.factor();
 
         while self.expect(vec![MINUS, PLUS]) {
@@ -143,7 +161,6 @@ impl Parser {
     }
 
     fn factor(&mut self) -> Expression {
-        println!("third setp");
         let mut expr = self.unary();
 
         while self.expect(vec![SLASH, STAR]) {
@@ -156,7 +173,6 @@ impl Parser {
     }
 
     fn unary(&mut self) -> Expression {
-        println!("second step");
         if self.expect(vec![BANG, MINUS]) {
             let op = self.previous();
             let right = self.unary();
@@ -167,7 +183,6 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Expression {
-        println!("first reach ");
         if self.expect(vec![FALSE]) {
             return Expression::Literal(Object::Bool(false));
         }
@@ -193,6 +208,7 @@ impl Parser {
         Expression::Mark
     }
 
+    /// 如果下一个 token 符合预期， 指针后移，否则抛出异常
     fn consume<T: AsRef<str> + Display>(&mut self, tag: TokenType, message: T) -> Token {
         if self.check(tag) {
             return self.advance();

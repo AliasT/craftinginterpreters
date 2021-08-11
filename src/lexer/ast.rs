@@ -46,6 +46,7 @@ pub enum Statement {
     Expression(Expression),
     Var(Token, Expression),
     Block(Vec<Statement>),
+    If(Expression, Box<Statement>, Option<Box<Statement>>),
 }
 
 impl Statement {}

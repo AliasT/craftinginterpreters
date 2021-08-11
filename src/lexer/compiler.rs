@@ -113,6 +113,17 @@ impl<'a> Compiler<'a> {
 
                 self.enviroment = previous;
             }
+            Statement::If(condition, then_stmt, else_stmt) => {
+                if let Object::Bool(truty) = self.compile_expr(condition).into() {
+                    if truty {
+                        self.compile_stmt(*then_stmt)
+                    } else if let Some(else_stmt) = else_stmt {
+                        self.compile_stmt(*else_stmt)
+                    }
+                } else {
+                    panic!("expect a bool within if statement")
+                }
+            }
         };
     }
 }
@@ -121,7 +132,14 @@ impl<'a> Compiler<'a> {
 fn test() {
     use super::{lexer::Lexer, parser::Parser};
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("var a = 3\nvar b = a\n{b = 10}\nprint b"));
+    let mut l = Lexer::new(String::from(
+        "var a = 3
+         var b = 4
+         if (a < b) {
+             b = 10
+         }
+         print b",
+    ));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);
