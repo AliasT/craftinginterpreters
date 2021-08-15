@@ -1,51 +1,35 @@
-use std::{borrow::BorrowMut, collections::HashMap, marker::PhantomData};
-
-#[derive(Clone, Debug)]
-struct B<'a> {
-    a: i32,
-
-    phd: PhantomData<&'a ()>,
-}
-
-#[derive(Debug)]
+use std::collections::HashMap;
 
 struct A<'a> {
-    h: HashMap<i32, B<'a>>,
+    data: B<'a>,
 }
 
+struct B<'a> {
+    s: HashMap<i32, &'a C>,
+}
+
+struct C {}
+
 impl<'a> A<'a> {
-    fn c(&self, k: &'a i32) -> &B<'a> {
-        let v = self.h.get(k);
-        v.unwrap()
+    fn test() {
+        let s = HashMap::<i32, &'a C>::new();
+
+        let mut b = B { s };
+
+        {
+            let c = &C {};
+            b.s.insert(3, c);
+        }
+
+        {
+            // let f = s;
+            // let c = C {};
+            // b.s.insert(3, &c);
+        }
+
+        Self { data: b };
     }
 }
 
 #[test]
-fn test() {
-    let mut h: HashMap<i32, B> = HashMap::new();
-    h.insert(
-        1,
-        B {
-            a: 10,
-            phd: PhantomData,
-        },
-    );
-    let mut a = A { h };
-
-    let b = a.c(&1);
-
-    a.h.insert(
-        1,
-        B {
-            a: 11,
-            phd: PhantomData,
-        },
-    );
-
-    // b.a = 11;
-
-    // a.b.a = 11;
-
-    println!("{:?}", a);
-    // println!("{:?}", b.a);
-}
+fn test() {}

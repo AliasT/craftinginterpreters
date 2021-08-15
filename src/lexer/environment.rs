@@ -3,13 +3,13 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use super::token::UnionObject;
 
 #[derive(Debug)]
-pub struct Enviroment<'a> {
+pub struct environment<'a> {
     pub values: HashMap<String, Rc<UnionObject<'a>>>,
-    pub enclosing: Option<Rc<RefCell<Enviroment<'a>>>>,
+    pub enclosing: Option<Rc<RefCell<environment<'a>>>>,
 }
 
-impl<'a> Enviroment<'a> {
-    pub fn new<T: Into<Option<Rc<RefCell<Enviroment<'a>>>>>>(enclosing: T) -> Self {
+impl<'a> environment<'a> {
+    pub fn new<T: Into<Option<Rc<RefCell<environment<'a>>>>>>(enclosing: T) -> Self {
         Self {
             values: HashMap::new(),
             enclosing: enclosing.into(),

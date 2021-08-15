@@ -2,22 +2,22 @@ use std::{cell::RefCell, rc::Rc};
 
 use super::{
     ast::{Expression, Statement},
-    environment::Enviroment,
+    environment::environment,
     token::{Object, TokenType::*, UnionObject},
 };
 
 #[derive(Debug)]
 pub struct Compiler<'a> {
     // pub expr: Expression,
-    enviroment: Rc<RefCell<Enviroment<'a>>>,
+    environment: Rc<RefCell<environment<'a>>>,
 }
 
 #[allow(dead_code)]
 impl<'a> Compiler<'a> {
     fn new() -> Self {
         Compiler {
-            enviroment: Rc::new(RefCell::new(Enviroment::new(
-                Option::<Rc<RefCell<Enviroment>>>::None,
+            environment: Rc::new(RefCell::new(environment::new(
+                Option::<Rc<RefCell<environment>>>::None,
             ))),
         }
     }
@@ -51,7 +51,7 @@ impl<'a> Compiler<'a> {
             }
             Expression::Assignment(ident, exp) => {
                 let value = self.compile_expr(*exp);
-                self.enviroment
+                self.environment
                     .borrow_mut()
                     .assign(ident.lexeme, value.clone());
                 value
@@ -86,7 +86,7 @@ impl<'a> Compiler<'a> {
             Expression::Grouping(ex) => self.compile_expr(*ex),
             Expression::Logical(_, _, _) => todo!(),
             Expression::Mark => todo!(),
-            Expression::Var(token) => self.enviroment.borrow_mut().retrieve(token.lexeme).clone(),
+            Expression::Var(token) => self.environment.borrow_mut().retrieve(token.lexeme).clone(),
         }
     }
 
@@ -101,17 +101,17 @@ impl<'a> Compiler<'a> {
             }
             Statement::Var(name, initializer) => {
                 let value = self.compile_expr(initializer);
-                self.enviroment.borrow_mut().define(name.lexeme, value);
+                self.environment.borrow_mut().define(name.lexeme, value);
             }
             Statement::Block(statements) => {
-                let previous = self.enviroment.clone();
-                let inner = Enviroment::new(self.enviroment.clone());
-                self.enviroment = Rc::new(RefCell::new(inner));
+                let previous = self.environment.clone();
+                let inner = environment::new(self.environment.clone());
+                self.environment = Rc::new(RefCell::new(inner));
                 for stmt in statements {
                     self.compile_stmt(stmt);
                 }
 
-                self.enviroment = previous;
+                self.environment = previous;
             }
             Statement::If(condition, then_stmt, else_stmt) => {
                 if let Object::Bool(truty) = self.compile_expr(condition).into() {
