@@ -76,7 +76,6 @@ impl Lexer {
 
     fn scan_token(&mut self) {
         let c = self.advance();
-        use self::*;
         match c {
             '(' => self.add_token(LEFT_PAREN, Object::Placeholder),
             ')' => self.add_token(RIGHT_PAREN, Object::Placeholder),

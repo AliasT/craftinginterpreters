@@ -2,22 +2,22 @@ use std::{cell::RefCell, rc::Rc};
 
 use super::{
     ast::{Expression, Statement},
-    environment::environment,
+    environment::Environment,
     token::{Object, TokenType::*, UnionObject},
 };
 
 #[derive(Debug)]
 pub struct Compiler<'a> {
     // pub expr: Expression,
-    environment: Rc<RefCell<environment<'a>>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 }
 
 #[allow(dead_code)]
 impl<'a> Compiler<'a> {
     fn new() -> Self {
         Compiler {
-            environment: Rc::new(RefCell::new(environment::new(
-                Option::<Rc<RefCell<environment>>>::None,
+            environment: Rc::new(RefCell::new(Environment::new(
+                Option::<Rc<RefCell<Environment>>>::None,
             ))),
         }
     }
@@ -105,7 +105,7 @@ impl<'a> Compiler<'a> {
             }
             Statement::Block(statements) => {
                 let previous = self.environment.clone();
-                let inner = environment::new(self.environment.clone());
+                let inner = Environment::new(self.environment.clone());
                 self.environment = Rc::new(RefCell::new(inner));
                 for stmt in statements {
                     self.compile_stmt(stmt);
