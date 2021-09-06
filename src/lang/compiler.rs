@@ -1,4 +1,8 @@
-use std::{cell::RefCell, rc::Rc};
+// http://www.craftinginterpreters.com/appendix-i.html
+
+use std::{borrow::Borrow, cell::RefCell, collections::btree_set::Union, env, rc::Rc};
+
+use crate::lang::environment;
 
 use super::{
     ast::{Expression, Statement},
@@ -87,8 +91,35 @@ impl<'a> Compiler<'a> {
             Expression::Logical(_, _, _) => todo!(),
             Expression::Mark => todo!(),
             Expression::Var(token) => self.environment.borrow_mut().retrieve(token.lexeme).clone(),
+            Expression::Call(callee, _, arguments) => {
+                if let UnionObject::Function(function) = self.compile_expr(*callee).borrow() {
+                    if let Statement::Function(a, parameters, stmts) = function.borrow() {
+                        // 参数计算
+                        let mut args = Vec::<Rc<UnionObject>>::new();
+                        for expr in arguments {
+                            args.push(self.compile_expr(expr))
+                        }
+
+                        // 补充上下文
+                        let mut environment = Environment::new(self.environment.clone());
+                        for (i, name) in parameters.iter().enumerate() {
+                            environment.define(name.lexeme.clone(), args[i].clone());
+                        }
+                        let prev = self.environment.clone();
+                        self.environment = Rc::new(RefCell::new(environment));
+                        for stmt in stmts {
+                            self.compile_stmt(stmt.to_owned());
+                        }
+                        self.environment = prev;
+                    }
+                }
+                // TODO: return statement
+                Object::Bool(false).into()
+            }
         }
     }
+
+    // fn call_func(&mut self, )
 
     fn compile_stmt(&mut self, stmt: Statement) {
         match stmt {
@@ -124,6 +155,14 @@ impl<'a> Compiler<'a> {
                     panic!("expect a bool within if statement")
                 }
             }
+            function => {
+                if let Statement::Function(name, ..) = &function {
+                    self.environment.borrow_mut().define(
+                        (*name).lexeme.clone(),
+                        Rc::new(UnionObject::Function(Rc::new(function))),
+                    );
+                }
+            }
         };
     }
 }
@@ -133,17 +172,19 @@ fn test() {
     use super::{lexer::Lexer, parser::Parser};
     // FIXME: Option Unwrap Error
     let mut l = Lexer::new(String::from(
-        "var a = 3
-         var b = 4
-         if (a < b) {
-             b = 10
-         }
-         print b",
+        "function a(){
+            print 1
+        }
+
+        a()
+
+        ",
     ));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);
     let statements = parser.parse();
+    println!("{:?}", statements);
 
     let _ = Compiler::new().interpret(statements);
     // assert_eq!(result, Object::Digit(3.0));

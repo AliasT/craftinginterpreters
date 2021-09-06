@@ -53,11 +53,15 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Statement {
+        if self.expect(vec![FUNCTION]) {
+            return self.function("function");
+        }
+
         if self.expect(vec![VAR]) {
             return self.var();
         }
 
-        return self.statement();
+        self.statement()
     }
 
     fn assignment(&mut self) -> Expression {
@@ -105,6 +109,26 @@ impl Parser {
         }
 
         panic!("var error")
+    }
+
+    fn function(&mut self, kind: &str) -> Statement {
+        let name = self.consume(IDENTIFIER, format!("expect {:?}", kind));
+        self.consume(LEFT_PAREN, format!("expect ( after  {:?} name", kind));
+        let mut parameters = Vec::<Token>::new();
+        if !self.check(RIGHT_PAREN) {
+            loop {
+                parameters.push(self.consume(IDENTIFIER, format!("expect parameter name")));
+                if !self.expect(vec![COMMA]) {
+                    break;
+                }
+            }
+        }
+        self.consume(RIGHT_PAREN, "expect ) after parameters");
+        self.consume(LEFT_BRACE, "expect { before function body");
+
+        let body = self.block();
+
+        Statement::Function(name, parameters, body)
     }
 
     fn expression_statement(&mut self) -> Statement {
@@ -179,7 +203,36 @@ impl Parser {
             return Expression::Unary(op, Box::new(right));
         }
 
-        self.primary()
+        self.call()
+    }
+
+    fn call(&mut self) -> Expression {
+        let mut expr = self.primary();
+        loop {
+            // 嵌套执行的函数形式处理
+            // f1(f2())
+            if self.expect(vec![LEFT_PAREN]) {
+                expr = self.finish_call(expr);
+            } else {
+                break;
+            }
+        }
+        expr
+    }
+
+    fn finish_call(&mut self, callee: Expression) -> Expression {
+        let mut arguments = Vec::new();
+        if !self.check(RIGHT_PAREN) {
+            loop {
+                arguments.push(self.expression());
+                if !self.expect(vec![COMMA]) {
+                    break;
+                }
+            }
+        }
+
+        let paren = self.consume(RIGHT_PAREN, "expect ')' after arguments");
+        Expression::Call(Box::new(callee), paren, arguments)
     }
 
     fn primary(&mut self) -> Expression {
@@ -259,10 +312,10 @@ impl Parser {
 
 #[test]
 fn test() {
-    use crate::lexer::lexer::Lexer;
+    use crate::lang::lexer::Lexer;
 
     // FIXME: Option Unwrap Error
-    let mut l = Lexer::new(String::from("1+6/(3+3)*2"));
+    let mut l = Lexer::new(String::from("function a() {print 1}"));
     l.scan_tokens();
 
     let mut parser = Parser::new(l.tokens);

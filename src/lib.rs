@@ -1,2 +1,2 @@
-mod lexer;
+mod lang;
 mod playground;

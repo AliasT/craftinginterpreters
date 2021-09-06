@@ -1,3 +1,5 @@
+use super::ast::Statement;
+
 use std::{
     fmt::{Debug, Display},
     rc::Rc,
@@ -54,6 +56,7 @@ pub enum TokenType {
     TRUE,
     VAR,
     WHILE,
+    FUNCTION,
 
     EOF,
 }
@@ -74,6 +77,8 @@ pub enum UnionObject<'a> {
     Value(Object),
     /// 引用类型
     Reference(&'a Object),
+
+    Function(Rc<Statement>),
 }
 
 impl From<String> for Object {
@@ -120,6 +125,7 @@ impl<'a> Into<Object> for Rc<UnionObject<'a>> {
         match self.as_ref() {
             UnionObject::Value(v) => v.to_owned(),
             UnionObject::Reference(v) => todo!(),
+            UnionObject::Function(_) => todo!(),
         }
     }
 }
@@ -157,6 +163,7 @@ pub static Keywords: phf::Map<&'static str, TokenType> = phf_map! {
     "true"   => TRUE,
     "var"    => VAR,
     "while"  => WHILE,
+    "function" => FUNCTION
 };
 
 #[derive(Debug, Clone, PartialEq)]

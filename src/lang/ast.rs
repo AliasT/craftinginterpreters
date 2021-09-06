@@ -1,3 +1,5 @@
+// http://www.craftinginterpreters.com/appendix-ii.html
+
 use super::token::{Object, Token, TokenType};
 
 #[allow(dead_code)]
@@ -11,6 +13,7 @@ pub enum Expression {
     Grouping(Box<Expression>),
     /// A and B, A or B
     Logical(Box<Expression>, Token, Box<Expression>),
+    Call(Box<Expression>, Token, Vec<Expression>),
     Var(Token),
     Mark,
 }
@@ -36,6 +39,7 @@ impl Expression {
                 Expression::Logical(_, _, _) => todo!(),
                 Expression::Mark => todo!(),
                 Expression::Var(_) => todo!(),
+                Expression::Call(callee, paren, arguments) => todo!(),
             }
     }
 }
@@ -47,6 +51,7 @@ pub enum Statement {
     Var(Token, Expression),
     Block(Vec<Statement>),
     If(Expression, Box<Statement>, Option<Box<Statement>>),
+    Function(Token, Vec<Token>, Vec<Statement>),
 }
 
 impl Statement {}
